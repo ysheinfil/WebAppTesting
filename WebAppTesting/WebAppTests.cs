@@ -24,13 +24,15 @@ namespace WebAppTesting
             StartingUrl = startingUrl;
             var ShowBrowser = ConfigurationManager.AppSettings["ShowBrowser"];
             if (ShowBrowser.ToUpper().Equals("YES") || ShowBrowser.ToUpper().Equals("TRUE"))
+            {                
+                driver = new ChromeDriver();
+            }
+            else
             {
                 ChromeOptions options = new ChromeOptions();
                 options.AddArguments("--headless");
                 driver = new ChromeDriver(options);
             }
-            else
-                driver = new ChromeDriver();
         }
 
 
@@ -73,8 +75,7 @@ namespace WebAppTesting
             {
                 var aLink = element.FindElement(By.TagName("a"));
                 var fac = aLink.GetAttribute("innerText");
-                RemoveEndingNumber(fac);
-                facilitiesLinks.Add(aLink.GetAttribute("href"), fac);
+                facilitiesLinks.Add(aLink.GetAttribute("href"), RemoveEndingNumber(fac));
             }
             return facilitiesLinks;
         }
