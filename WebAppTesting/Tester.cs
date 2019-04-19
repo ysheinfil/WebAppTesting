@@ -20,10 +20,7 @@ namespace WebAppTesting
             Messages.AddRange(evolveTests.Messages);
 
             var authTests = new AuthorizationsTests();
-            authTests.RunTests();
-            Messages.Add("Authorizations Tests");
-            Messages.AddRange(authTests.Messages);
-            
+            TestApp(Messages, authTests);
 
             foreach (string message in Messages)
             {
@@ -31,5 +28,11 @@ namespace WebAppTesting
             }
         }
 
+        private static void TestApp(List<string> Messages, WebAppTests authTests)
+        {
+            authTests.RunTests();
+            Messages.Add("Authorizations Tests");
+            Messages.AddRange(authTests.Messages);
+        }
     }
 }

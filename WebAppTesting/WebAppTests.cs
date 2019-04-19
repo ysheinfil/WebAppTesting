@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using OpenQA.Selenium;
@@ -12,7 +14,7 @@ namespace WebAppTesting
 {
     public abstract class WebAppTests
     {
-        public static IWebDriver driver = new ChromeDriver();
+        public static IWebDriver driver;
         public string StartingUrl;
         public string AppName { get; set; }
         private List<string> _messages;
@@ -20,6 +22,15 @@ namespace WebAppTesting
         public WebAppTests(string startingUrl)
         {
             StartingUrl = startingUrl;
+            var ShowBrowser = ConfigurationManager.AppSettings["ShowBrowser"];
+            if (ShowBrowser.ToUpper().Equals("YES") || ShowBrowser.ToUpper().Equals("TRUE"))
+            {
+                ChromeOptions options = new ChromeOptions();
+                options.AddArguments("--headless");
+                driver = new ChromeDriver(options);
+            }
+            else
+                driver = new ChromeDriver();
         }
 
 
@@ -53,31 +64,46 @@ namespace WebAppTesting
             _messages.Add(testName + ": " + failure);
         }
 
-        protected List<string> GetMyFacilities()
+        protected Dictionary<string,string> GetMyFacilities()
         {
-            List<string> facilities = new List<string>();
+            Dictionary<string, string> facilitiesLinks = new Dictionary<string, string>();
 
             var facilityDropDownLink = driver.FindElement(By.ClassName("facility-dropdown"));
             foreach (IWebElement element in facilityDropDownLink.FindElements(By.TagName("li")))
             {
-                facilities.Add(element.FindElement(By.TagName("a")).GetAttribute("href"));
+                var aLink = element.FindElement(By.TagName("a"));
+                var fac = aLink.GetAttribute("innerText");
+                RemoveEndingNumber(fac);
+                facilitiesLinks.Add(aLink.GetAttribute("href"), fac);
             }
-            return facilities;
+            return facilitiesLinks;
+        }
+
+        public static string RemoveEndingNumber(string fac)
+        {
+            string retVal;
+            if (Regex.IsMatch(fac, @"\d+$"))
+            {
+                retVal = fac.Remove(fac.LastIndexOf(' '));
+            }
+            else
+                retVal = fac;
+            return retVal;
         }
 
         public void TestMyFacilities()
         {
-            List<string> facilitiesLink = GetMyFacilities();
-
+            Dictionary<string, string> facilitiesLink = GetMyFacilities();
+            Console.Write(AppName);
             foreach (var facilityElement in facilitiesLink)
             {
-                driver.Navigate().GoToUrl(facilityElement);
-
+                driver.Navigate().GoToUrl(facilityElement.Key);
+                Console.Write(".");
                 // Not finding the "Oops" in failed facilities.However, Length == 0, so we'll use that
                 var h1Text = driver.FindElement(By.TagName("h1")).Text;
                 if (h1Text.Length == 0 || h1Text.Contains("Oops"))
                 {
-                    AddError("TestFacilities", "Link [" + facilityElement + "] failed.");
+                    AddError(AppName + " TestFacilities", "Facility " + facilityElement.Value + " failed.");
                 }
             }
         }
