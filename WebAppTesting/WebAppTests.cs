@@ -22,16 +22,17 @@ namespace WebAppTesting
         public WebAppTests(string startingUrl)
         {
             StartingUrl = startingUrl;
+            var chromeLocation = @"c:/libraries/";
             var ShowBrowser = ConfigurationManager.AppSettings["ShowBrowser"];
             if (ShowBrowser.ToUpper().Equals("YES") || ShowBrowser.ToUpper().Equals("TRUE"))
             {                
-                driver = new ChromeDriver();
+                driver = new ChromeDriver(chromeLocation);
             }
             else
             {
                 ChromeOptions options = new ChromeOptions();
                 options.AddArguments("--headless");
-                driver = new ChromeDriver(options);
+                driver = new ChromeDriver(chromeLocation, options);
             }
         }
 
@@ -40,8 +41,8 @@ namespace WebAppTesting
         {
             _messages = new List<string>();
             driver.Navigate().GoToUrl(StartingUrl);
-            driver.FindElement(By.Id("username")).SendKeys("ysheinfil");
-            driver.FindElement(By.Id("password")).SendKeys("4770WPr!");
+            driver.FindElement(By.Id("username")).SendKeys("apptester");
+            driver.FindElement(By.Id("password")).SendKeys("pyth0nt3ster");
             driver.FindElement(By.ClassName("btn-primary")).Click();
 
         }
@@ -64,6 +65,11 @@ namespace WebAppTesting
         public void AddError(string testName, string failure)
         {
             _messages.Add(testName + ": " + failure);
+        }
+
+        public void AddMessage(string message)
+        {
+            _messages.Add(message);
         }
 
         protected Dictionary<string,string> GetMyFacilities()
@@ -104,7 +110,7 @@ namespace WebAppTesting
                 var h1Text = driver.FindElement(By.TagName("h1")).Text;
                 if (h1Text.Length == 0 || h1Text.Contains("Oops"))
                 {
-                    AddError(AppName + " TestFacilities", "Facility " + facilityElement.Value + " failed.");
+                    AddError(AppName + " TestFacilities", "Facility " + facilityElement.Value + " with id[" + facilityElement.Key + "] failed.");
                 }
             }
         }

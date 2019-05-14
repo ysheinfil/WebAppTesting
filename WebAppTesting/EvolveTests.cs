@@ -31,8 +31,6 @@ namespace WebAppTesting
             return true;
         }
 
-        
-
         public bool GoToFirstRecord()
         {
             if(!Regex.IsMatch(driver.Url, @"authorizations\/\d\/index"))
@@ -86,11 +84,9 @@ namespace WebAppTesting
 
         public override void RunTests()
         {
-            //GotoTestFacility();
-            //GoToFirstRecord();
-            //GotoAddTestRecord();
-            //AddTestRecord();
+            AddMessage("Starting Evolve tests.");
             TestMyFacilities();
+            AddMessage("Evolve tests done.");
         }
     }
 }

@@ -20,7 +20,9 @@ namespace WebAppTesting
 
         public override void RunTests()
         {
+            AddMessage("Starting Authorizations Tests.");
             TestMyFacilities();
+            AddMessage("Authorizations tests done.");
         }
     }
 }

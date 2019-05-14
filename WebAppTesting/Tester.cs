@@ -13,26 +13,33 @@ namespace WebAppTesting
         public void RunTests()
         {
             List<string> Messages = new List<string>();
-            var evolveTests = new EvolveTests();
-            evolveTests.RunTests();
-            evolveTests.Logout();
-            Messages.Add("Evolve Tests");
-            Messages.AddRange(evolveTests.Messages);
 
-            var authTests = new AuthorizationsTests();
-            TestApp(Messages, authTests);
+            TestApp(Messages, new EvolveTests());
+            TestApp(Messages, new AuthorizationsTests());
 
+
+            Console.WriteLine();
             foreach (string message in Messages)
             {
                 Console.WriteLine(message);
             }
         }
 
-        private static void TestApp(List<string> Messages, WebAppTests authTests)
+        private static void TestApp(List<string> Messages, WebAppTests appTests)
         {
-            authTests.RunTests();
-            Messages.Add("Authorizations Tests");
-            Messages.AddRange(authTests.Messages);
+            Console.WriteLine();
+            try
+            {
+                appTests.RunTests();
+                appTests.Logout();
+                Messages.AddRange(appTests.Messages);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error while running tests.");
+                Console.WriteLine(ex);
+            }
         }
+
     }
 }
