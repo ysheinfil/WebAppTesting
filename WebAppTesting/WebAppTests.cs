@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using System.Web;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
@@ -104,16 +104,44 @@ namespace WebAppTesting
             Console.Write(AppName);
             foreach (var facilityElement in facilitiesLink)
             {
+                Dictionary<string, string> TabsToVisit = new Dictionary<string, string>();
                 driver.Navigate().GoToUrl(facilityElement.Key);
                 Console.Write(".");
-                // Not finding the "Oops" in failed facilities.However, Length == 0, so we'll use that
-                var h1Text = driver.FindElement(By.TagName("h1")).Text;
-                if (h1Text.Length == 0 || h1Text.Contains("Oops"))
+
+                if (ErrorPage(driver))
                 {
-                    AddError(AppName + " TestFacilities", "Facility " + facilityElement.Value + " with id[" + facilityElement.Key + "] failed.");
+                    AddError(AppName + " TestFacilities", 
+                        "Facility " + facilityElement.Value + " with id[" + facilityElement.Key + "] failed.");
+                }
+
+                var tabs = driver.FindElement(By.ClassName("authorization-tabs"));
+                
+                // Need to first get a list of the tab links and then visit them.
+                foreach(IWebElement tab in tabs.FindElements(By.TagName("li")))
+                {
+                    var aLink = tab.FindElement(By.TagName("a"));
+                    var tabName = aLink.GetAttribute("innerText");
+                    TabsToVisit.Add(RemoveEndingNumber(tabName), aLink.GetAttribute("href"));
+                }                
+
+                foreach(var tabName in TabsToVisit.Keys)
+                {
+                    driver.Navigate().GoToUrl(TabsToVisit[tabName]);
+                    if(ErrorPage(driver))
+                    {
+                        AddError(AppName + " TestFacilities",
+                        "Facility " + facilityElement.Value + " with id[" + facilityElement.Key + "] " + 
+                        " on tab [" + tabName + "] failed.");
+                    }
                 }
             }
         }
 
+        private bool ErrorPage(IWebDriver driver)
+        {
+            var h1Text = driver.FindElement(By.TagName("h1")).Text;
+            return h1Text.Length == 0 || h1Text.Contains("Oops");
+
+        }
     }
 }
